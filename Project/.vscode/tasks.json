@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Process Lifecycle Web Server",
+            "type": "shell",
+            "command": "node server.js",
+            "isBackground": true,
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Compile C Code (GCC in WSL)",
+            "type": "shell",
+            "command": "wsl --cd \"${workspaceFolder}/c_src\" gcc -Wall -Wextra -O2 main.c module_creation.c module_sync.c module_monitor.c -o ../bin/process_system",
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Run C Binary (Normal Scenario)",
+            "type": "shell",
+            "command": "wsl --cd \"${workspaceFolder}\" ./bin/process_system normal",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}

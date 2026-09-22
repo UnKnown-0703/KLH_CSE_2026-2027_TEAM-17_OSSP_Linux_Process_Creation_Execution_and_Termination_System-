@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Process Creation, Execution and Termination System</title>
+    <!-- Modern typography & icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+
+    <!-- Top Navigation & Institutional Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="university-badge">
+                    <span class="uni-code">OSSP</span>
+                    <span class="uni-dept">POSIX • Linux Kernel</span>
+                </div>
+                <div class="project-identity">
+                    <h1 class="project-title">Linux Process Creation, Execution & Termination System</h1>
+                    <p class="course-subtitle">OPERATING SYSTEMS AND SYSTEMS PROGRAMMING • PROCESS LIFECYCLE MANAGEMENT</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="status-card" id="systemStatusCard">
+                    <div class="status-indicator">
+                        <span class="status-dot pulse" id="statusDot"></span>
+                        <span class="status-text" id="statusText">Detecting Environment...</span>
+                    </div>
+                    <div class="system-meta" id="systemMeta">WSL Ubuntu / GCC POSIX</div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="recompileBtn" title="Recompile C programs with GCC in WSL">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+                        <span>Compile GCC</span>
+                    </button>
+                    <button class="btn btn-primary" id="exportReportBtn" title="Export Formatted Lab Submission Report">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                        <span>Lab Report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="main-content">
+
+        <!-- Navigation Tabs (Viva Guide removed) -->
+        <nav class="content-tabs">
+            <button class="tab-btn active" data-tab="dashboardTab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Process Lifecycle Dashboard
+            </button>
+            <button class="tab-btn" data-tab="stepByStepTab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Step-by-Step Visualizer
+            </button>
+            <button class="tab-btn" data-tab="codeTab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                C Source Code (System Modules)
+            </button>
+        </nav>
+
+        <!-- TAB 1: MAIN DASHBOARD -->
+        <section class="tab-panel active" id="dashboardTab">
+            <!-- Scenario Cards Row (Names replaced with clean technical badges) -->
+            <div class="scenarios-grid">
+                <!-- Scenario 1: Standard -->
+                <div class="scenario-card active" data-scenario="normal">
+                    <div class="card-icon blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Standard Flow</div>
+                        <h3 class="card-title">1. Complete Life Cycle</h3>
+                        <p class="card-desc"><code>fork()</code> ➔ <code>execvp()</code> ➔ <code>waitpid()</code> ➔ <code>exit()</code>. Demonstrates full creation, address replacement, and synchronization.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-blue">POSIX Core API</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="normal">Run Scenario</button>
+                    </div>
+                </div>
+
+                <!-- Scenario 2: Zombie -->
+                <div class="scenario-card" data-scenario="zombie">
+                    <div class="card-icon purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5z"></path></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Anomaly Demo</div>
+                        <h3 class="card-title">2. Zombie Process</h3>
+                        <p class="card-desc">Child terminates immediately via <code>exit(42)</code> while parent sleeps without <code>wait()</code>. Inspects <code>Z (defunct)</code> state in <code>/proc</code> before reaping.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-purple">Kernel State 'Z'</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="zombie">Run Zombie</button>
+                    </div>
+                </div>
+
+                <!-- Scenario 3: Orphan -->
+                <div class="scenario-card" data-scenario="orphan">
+                    <div class="card-icon amber">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="18" y1="8" x2="23" y2="13"></line><line x1="23" y1="8" x2="18" y2="13"></line></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Anomaly Demo</div>
+                        <h3 class="card-title">3. Orphan Process</h3>
+                        <p class="card-desc">Parent process exits immediately while child runs. Child is orphaned and adopted by <code>init</code> / <code>systemd</code> (PPID changes to 1 or subreaper).</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-amber">Init Adoption</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="orphan">Run Orphan</button>
+                    </div>
+                </div>
+
+                <!-- Scenario 4: Non-blocking -->
+                <div class="scenario-card" data-scenario="nonblocking">
+                    <div class="card-icon green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Monitoring</div>
+                        <h3 class="card-title">4. Non-Blocking Wait</h3>
+                        <p class="card-desc">Parent uses <code>waitpid(pid, &status, WNOHANG)</code> to perform background tasks without freezing while child executes concurrently.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">WNOHANG Polling</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="nonblocking">Run Polling</button>
+                    </div>
+                </div>
+
+                <!-- Scenario 5: Signals -->
+                <div class="scenario-card" data-scenario="signal">
+                    <div class="card-icon red">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Signals</div>
+                        <h3 class="card-title">5. Signal Termination</h3>
+                        <p class="card-desc">Parent creates child and terminates it abruptly with <code>SIGKILL</code> (9). Parent checks <code>WIFSIGNALED</code> and extracts <code>WTERMSIG</code>.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-red">SIGKILL (9)</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="signal">Send Signal</button>
+                    </div>
+                </div>
+
+                <!-- Scenario 6: Custom Command -->
+                <div class="scenario-card" data-scenario="custom">
+                    <div class="card-icon cyan">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-tag">Interactive CLI</div>
+                        <h3 class="card-title">6. Custom Linux Exec</h3>
+                        <p class="card-desc">Execute any real command in Linux via <code>execvp()</code>. Examples: <code>ls -l</code>, <code>uname -a</code>, <code>whoami</code>, <code>date</code>, <code>ps -ef</code>.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-cyan">execvp() Runner</span>
+                        <button class="btn btn-sm btn-primary run-scenario-btn" data-scenario="custom">Custom Exec</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Command Input Bar -->
+            <div class="custom-command-bar" id="customCommandBar">
+                <div class="input-wrapper">
+                    <span class="prompt-prefix">linux:~$</span>
+                    <input type="text" id="customCommandInput" placeholder="Enter command e.g., ls -la, uname -a, whoami, ps -ef, cat /etc/os-release" value="ls -la">
+                </div>
+                <div class="quick-commands">
+                    <span class="quick-label">Presets:</span>
+                    <button class="chip-btn" data-cmd="ls -la">ls -la</button>
+                    <button class="chip-btn" data-cmd="whoami">whoami</button>
+                    <button class="chip-btn" data-cmd="uname -a">uname -a</button>
+                    <button class="chip-btn" data-cmd="date">date</button>
+                    <button class="chip-btn" data-cmd="ps aux">ps aux</button>
+                    <button class="chip-btn" data-cmd="uptime">uptime</button>
+                </div>
+                <button class="btn btn-success" id="executeCustomBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Execute via fork() & execvp()
+                </button>
+            </div>
+
+            <!-- Live Visualization & Terminal Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Process Tree & Process Table -->
+                <div class="dash-column left-col">
+                    <!-- Process Tree Card -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"></circle><circle cx="6" cy="19" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M12 8v4M6 16v-4h12v4"></path></svg>
+                                <span>Linux Process Tree Hierarchy</span>
+                            </div>
+                            <span class="live-pill" id="treeLiveIndicator">Active</span>
+                        </div>
+                        <div class="panel-body canvas-body">
+                            <div id="processTreeContainer" class="tree-container">
+                                <!-- Dynamic SVG Process Tree drawn by diagrams.js -->
+                            </div>
+                            <!-- State Machine Legend -->
+                            <div class="state-legend">
+                                <span class="legend-item"><span class="dot ready"></span> Ready</span>
+                                <span class="legend-item"><span class="dot running"></span> Running</span>
+                                <span class="legend-item"><span class="dot waiting"></span> Waiting / Blocked</span>
+                                <span class="legend-item"><span class="dot sleeping"></span> Sleeping</span>
+                                <span class="legend-item"><span class="dot zombie"></span> Zombie (Z)</span>
+                                <span class="legend-item"><span class="dot orphan"></span> Orphan</span>
+                                <span class="legend-item"><span class="dot terminated"></span> Terminated</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PCB & Memory Layout Inspector -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                <span>Process Control Block (PCB) & Memory Space</span>
+                            </div>
+                            <div class="view-toggle">
+                                <button class="toggle-btn active" id="viewPcbBtn">PCB View</button>
+                                <button class="toggle-btn" id="viewMemBtn">Memory View</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <!-- PCB View -->
+                            <div id="pcbViewContainer" class="pcb-container">
+                                <div class="pcb-cards-grid">
+                                    <div class="pcb-box parent-pcb">
+                                        <div class="pcb-box-title">Parent Process PCB</div>
+                                        <table class="pcb-table">
+                                            <tr><td>Process ID (PID)</td><td class="val highlight" id="parentPidVal">--</td></tr>
+                                            <tr><td>Parent PID (PPID)</td><td class="val" id="parentPpidVal">--</td></tr>
+                                            <tr><td>State</td><td class="val" id="parentStateVal"><span class="state-badge ready">READY</span></td></tr>
+                                            <tr><td>File Descriptors</td><td class="val code-font">0: stdin | 1: stdout | 2: stderr</td></tr>
+                                            <tr><td>Scheduling / Priority</td><td class="val">SCHED_OTHER (0)</td></tr>
+                                        </table>
+                                    </div>
+                                    <div class="pcb-box child-pcb">
+                                        <div class="pcb-box-title">Child Process PCB</div>
+                                        <table class="pcb-table">
+                                            <tr><td>Process ID (PID)</td><td class="val highlight" id="childPidVal">--</td></tr>
+                                            <tr><td>Parent PID (PPID)</td><td class="val" id="childPpidVal">--</td></tr>
+                                            <tr><td>State</td><td class="val" id="childStateVal"><span class="state-badge waiting">IDLE</span></td></tr>
+                                            <tr><td>Exit Code / Signal</td><td class="val code-font" id="childExitVal">--</td></tr>
+                                            <tr><td>Image Replaced</td><td class="val" id="childExecVal">No (Pre-exec)</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Memory View (Virtual Address Space) -->
+                            <div id="memViewContainer" class="mem-container" style="display:none;">
+                                <div class="memory-columns">
+                                    <div class="mem-column">
+                                        <div class="mem-title">Pre-exec() Address Space (Duplicated via fork)</div>
+                                        <div class="mem-stack-diagram">
+                                            <div class="mem-segment stack">Stack (Local Variables, Call Frames) <span>↓ Grows Down</span></div>
+                                            <div class="mem-segment unmapped">Free Virtual Memory Space</div>
+                                            <div class="mem-segment heap">Heap (Dynamic Malloc) <span>↑ Grows Up</span></div>
+                                            <div class="mem-segment bss">BSS (Uninitialized Globals)</div>
+                                            <div class="mem-segment data">Data (Initialized Globals)</div>
+                                            <div class="mem-segment text">Text / Code Segment (Parent binary)</div>
+                                        </div>
+                                    </div>
+                                    <div class="mem-arrow-col">
+                                        <div class="exec-arrow">
+                                            <span>execvp()</span>
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                            <small>Replaces Text, Data, Heap, Stack!</small>
+                                        </div>
+                                    </div>
+                                    <div class="mem-column">
+                                        <div class="mem-title">Post-exec() Address Space (New Program Loaded)</div>
+                                        <div class="mem-stack-diagram">
+                                            <div class="mem-segment stack post">Fresh Stack (New program arguments) <span>↓</span></div>
+                                            <div class="mem-segment unmapped">Fresh Virtual Memory</div>
+                                            <div class="mem-segment heap post">Fresh Heap <span>↑</span></div>
+                                            <div class="mem-segment bss post">Target Program BSS</div>
+                                            <div class="mem-segment data post">Target Program Data</div>
+                                            <div class="mem-segment text post" id="targetExecText">New Program Code (e.g. /bin/ls)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Terminal & Real-Time Event Log -->
+                <div class="dash-column right-col">
+                    <div class="panel-card terminal-card">
+                        <div class="panel-header term-header">
+                            <div class="terminal-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <div class="term-title">Linux POSIX System Call Terminal & Event Stream</div>
+                            <div class="term-actions">
+                                <button class="term-btn" id="clearTerminalBtn" title="Clear Terminal Logs">Clear</button>
+                                <button class="term-btn" id="copyLogsBtn" title="Copy Output to Clipboard">Copy</button>
+                            </div>
+                        </div>
+                        <div class="terminal-body" id="terminalOutput">
+                            <div class="term-line prompt">linux-process-system:~$ Ready for execution. Select a scenario above or run custom command.</div>
+                            <div class="term-line info">Platform: Ubuntu Linux (WSL2) | Compiler: GCC 15.2.0 | POSIX System Calls Engine</div>
+                        </div>
+                    </div>
+
+                    <!-- System Call Trace Table -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                <span>Real-Time System Call Audit Table</span>
+                            </div>
+                            <span class="badge badge-cyan" id="eventCountBadge">0 events</span>
+                        </div>
+                        <div class="panel-body p-0">
+                            <div class="table-responsive">
+                                <table class="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>System Call</th>
+                                            <th>Phase</th>
+                                            <th>PID</th>
+                                            <th>PPID</th>
+                                            <th>State</th>
+                                            <th>Action / Kernel Event</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="auditTableBody">
+                                        <tr>
+                                            <td colspan="7" class="empty-state">No execution logs yet. Click any "Run Scenario" button above!</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: STEP-BY-STEP VISUALIZER -->
+        <section class="tab-panel" id="stepByStepTab">
+            <div class="stepper-wrapper">
+                <div class="stepper-header">
+                    <div class="stepper-info">
+                        <h2>Interactive Process Life Cycle Walkthrough</h2>
+                        <p>Control execution step-by-step to observe how Linux registers, memory, and kernel process table structures evolve.</p>
+                    </div>
+                    <div class="stepper-controls">
+                        <button class="btn btn-secondary" id="stepPrevBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+                            Prev
+                        </button>
+                        <button class="btn btn-primary" id="stepNextBtn">
+                            Next
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                        </button>
+                        <button class="btn btn-secondary" id="stepAutoPlayBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Auto Play
+                        </button>
+                        <button class="btn btn-secondary" id="stepResetBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v6h6M21 12A9 9 0 0 0 6 5.3L3 8"/></svg>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Timeline Bar -->
+                <div class="timeline-stepper" id="timelineStepper">
+                    <div class="step-indicator active" data-step="0"><span class="step-num">1</span> <span class="step-label">Init (getpid)</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="1"><span class="step-num">2</span> <span class="step-label">fork() Call</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="2"><span class="step-num">3</span> <span class="step-label">Child Created</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="3"><span class="step-num">4</span> <span class="step-label">execvp() Image</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="4"><span class="step-num">5</span> <span class="step-label">waitpid() Block</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="5"><span class="step-num">6</span> <span class="step-label">exit() Status</span></div>
+                    <div class="step-connector"></div>
+                    <div class="step-indicator" data-step="6"><span class="step-num">7</span> <span class="step-label">Reaped & Cleanup</span></div>
+                </div>
+
+                <!-- Step Details Card -->
+                <div class="step-detail-card" id="stepDetailCard">
+                    <div class="step-card-header">
+                        <div class="step-phase-badge" id="stepPhaseBadge">PHASE 1: INITIALIZATION</div>
+                        <h3 class="step-title" id="stepTitle">Parent Process Running in User Space</h3>
+                    </div>
+                    <div class="step-card-grid">
+                        <div class="step-explanation">
+                            <h4>OS Kernel Perspective:</h4>
+                            <p id="stepExplanation">Parent process is executing normally with PID obtained from <code>getpid()</code>. The kernel maintains a Process Control Block (<code>task_struct</code>) in memory with open file descriptors, credentials, and virtual memory mappings.</p>
+                            
+                            <div class="system-call-box">
+                                <span class="box-label">Linux System Call Invoked:</span>
+                                <code id="stepSyscall">pid_t parent = getpid(); pid_t ppid = getppid();</code>
+                            </div>
+                        </div>
+                        <div class="step-visual">
+                            <div class="step-diagram" id="stepDiagram">
+                                <!-- Rendered dynamically by diagrams.js -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: SOURCE CODE VIEWER (Clean System Modules) -->
+        <section class="tab-panel" id="codeTab">
+            <div class="code-viewer-container">
+                <div class="code-sidebar">
+                    <div class="sidebar-title">System Source Modules</div>
+                    <ul class="code-file-list">
+                        <li class="code-file-item active" data-file="creation">
+                            <span class="file-name">module_creation.c</span>
+                            <span class="file-author">Process Creation</span>
+                            <span class="file-tag">fork() & exec()</span>
+                        </li>
+                        <li class="code-file-item" data-file="sync">
+                            <span class="file-name">module_sync.c</span>
+                            <span class="file-author">Synchronization</span>
+                            <span class="file-tag">waitpid() & exit()</span>
+                        </li>
+                        <li class="code-file-item" data-file="monitor">
+                            <span class="file-name">module_monitor.c</span>
+                            <span class="file-author">Monitoring & Anomaly</span>
+                            <span class="file-tag">getpid, Zombie & Orphan</span>
+                        </li>
+                        <li class="code-file-item" data-file="header">
+                            <span class="file-name">process_lifecycle.h</span>
+                            <span class="file-author">Header & Types</span>
+                            <span class="file-tag">Definitions</span>
+                        </li>
+                        <li class="code-file-item" data-file="main">
+                            <span class="file-name">main.c</span>
+                            <span class="file-author">CLI Dispatcher</span>
+                            <span class="file-tag">Event Streamer</span>
+                        </li>
+                    </ul>
+
+                    <div class="objectives-box">
+                        <h4>System Objectives</h4>
+                        <ul>
+                            <li><strong>Obj 1:</strong> Process creation via <code>fork()</code></li>
+                            <li><strong>Obj 2:</strong> Program execution via <code>exec()</code></li>
+                            <li><strong>Obj 3:</strong> Synchronization via <code>wait()</code> / <code>waitpid()</code></li>
+                            <li><strong>Obj 4:</strong> Termination, exit codes & resource cleanup</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="code-content-panel">
+                    <div class="code-header">
+                        <div class="code-meta">
+                            <span class="current-file-name" id="currentFileName">module_creation.c</span>
+                            <span class="current-file-author" id="currentFileAuthor">System Module</span>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" id="copyCodeBtn">Copy Code</button>
+                    </div>
+                    <pre class="code-block"><code id="codeViewerContent">/* Loading source code... */</code></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Printable Lab Evaluation Report -->
+    <div class="modal-backdrop" id="reportModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Linux Process Lifecycle - Lab Evaluation Report</h3>
+                <button class="close-btn" id="closeReportModalBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="reportPrintArea">
+                <div class="report-header">
+                    <div class="report-university">OPERATING SYSTEMS & SYSTEMS PROGRAMMING</div>
+                    <div class="report-dept">Process Management Laboratory</div>
+                    <div class="report-course">Linux Process Lifecycle Verification & Audit</div>
+                    <div class="report-title">PROJECT EVALUATION REPORT: Linux Process Creation, Execution & Termination System</div>
+                </div>
+
+                <div class="report-section">
+                    <h4>System Architecture & Modules</h4>
+                    <table class="report-table">
+                        <tr><th>Module</th><th>POSIX System Calls</th><th>Functionality</th></tr>
+                        <tr><td>Module 1: Process Creation & Execution</td><td><code>fork()</code>, <code>execvp()</code></td><td>Creates child process and replaces address space.</td></tr>
+                        <tr><td>Module 2: Synchronization & Termination</td><td><code>wait()</code>, <code>waitpid()</code>, <code>exit()</code></td><td>Parent-child synchronization, WNOHANG, and exit status decoding.</td></tr>
+                        <tr><td>Module 3: Identification & Anomaly Simulation</td><td><code>getpid()</code>, <code>getppid()</code>, <code>/proc</code></td><td>PID/PPID tracking, Zombie state observation, and Orphan adoption.</td></tr>
+                    </table>
+                </div>
+
+                <div class="report-section">
+                    <h4>Experiment Execution Summary</h4>
+                    <p><strong>Environment:</strong> Linux (WSL2 Ubuntu) | <strong>Compiler:</strong> GCC 15.2.0 | <strong>POSIX APIs:</strong> fork, execvp, waitpid, exit, getpid, getppid</p>
+                    <div id="reportAuditSummary">
+                        <!-- Dynamic report log generated here -->
+                    </div>
+                </div>
+
+                <div class="report-signatures">
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        <span>Candidate / Submitter Signature</span>
+                    </div>
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        <span>Faculty / Evaluator Signature</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeReportBtn2">Close</button>
+                <button class="btn btn-primary" id="printReportBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Print / Save as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="diagrams.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

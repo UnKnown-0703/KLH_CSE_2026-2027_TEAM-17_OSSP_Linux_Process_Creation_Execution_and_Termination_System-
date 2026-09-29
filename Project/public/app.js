@@ -231,6 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const terminateCustomBtn = document.getElementById('terminateCustomBtn');
+        if (terminateCustomBtn) {
+            terminateCustomBtn.addEventListener('click', () => {
+                executeScenario('signal', '9');
+            });
+        }
+
         if (customInput) {
             customInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -454,7 +461,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function initTerminalControls() {
         const clearBtn = document.getElementById('clearTerminalBtn');
         const copyBtn = document.getElementById('copyLogsBtn');
+        const termKillBtn = document.getElementById('termKillBtn');
         const term = document.getElementById('terminalOutput');
+
+        if (termKillBtn) {
+            termKillBtn.addEventListener('click', () => {
+                executeScenario('signal', '9');
+            });
+        }
 
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {

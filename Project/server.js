@@ -16,7 +16,7 @@ const url = require('url');
 const PORT = process.env.PORT || 8000;
 const PROJECT_ROOT = __dirname;
 const PUBLIC_DIR = path.join(PROJECT_ROOT, 'public');
-const C_SRC_DIR = path.join(PROJECT_ROOT, 'c_src');
+const C_SRC_DIR = fs.existsSync(path.join(PROJECT_ROOT, 'src')) ? path.join(PROJECT_ROOT, 'src') : path.join(PROJECT_ROOT, 'c_src');
 const BIN_DIR = path.join(PROJECT_ROOT, 'bin');
 
 // MIME types table
@@ -108,7 +108,7 @@ async function handleSystemStatus(req, res) {
 
 async function handleCompile(req, res) {
     const compileCmd = getWSLCommand(
-        'gcc -Wall -Wextra -O2 -g c_src/main.c c_src/module_creation.c c_src/module_sync.c c_src/module_monitor.c -o bin/process_system'
+        'gcc -Wall -Wextra -O2 -g src/main.c src/module_creation.c src/module_sync.c src/module_monitor.c -o bin/process_system'
     );
     const result = await runCommand(compileCmd);
 
@@ -132,7 +132,7 @@ async function handleRun(req, res, postData) {
         const binaryPath = path.join(BIN_DIR, 'process_system');
         if (!fs.existsSync(binaryPath)) {
             await runCommand(getWSLCommand(
-                'gcc -Wall -Wextra -O2 c_src/main.c c_src/module_creation.c c_src/module_sync.c c_src/module_monitor.c -o bin/process_system'
+                'gcc -Wall -Wextra -O2 src/main.c src/module_creation.c src/module_sync.c src/module_monitor.c -o bin/process_system'
             ));
         }
 

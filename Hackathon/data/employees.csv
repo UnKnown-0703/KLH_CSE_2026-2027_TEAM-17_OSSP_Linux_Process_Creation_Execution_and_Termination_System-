@@ -1,0 +1,13 @@
+id,name,department,role,salary,experience_years
+101,Alice Johnson,Engineering,Systems Architect,145000,9
+102,Bob Smith,Operations,DevOps Engineer,112000,5
+103,Charlie Davis,Security,Infosec Analyst,128000,7
+104,Diana Prince,Engineering,Kernel Developer,162000,11
+105,Evan Wright,Data Science,ML Engineer,135000,6
+106,Fiona Gallagher,Engineering,Fullstack Dev,98000,4
+107,George Clark,Operations,SRE Specialist,125000,6
+108,Hannah Abbott,Security,Security Auditor,118000,5
+109,Ian Malcolm,Data Science,Data Scientist,140000,8
+110,Julia Roberts,Engineering,Backend Lead,155000,10
+111,Kevin Hart,Operations,Systems Admin,92000,3
+112,Laura Croft,Security,Penetration Tester,134000,7

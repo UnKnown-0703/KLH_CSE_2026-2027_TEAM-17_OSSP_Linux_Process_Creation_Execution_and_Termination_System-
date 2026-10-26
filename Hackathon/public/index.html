@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Multi-Process Pipeline Simulator | Team 17</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="simple-header">
+            <div class="logo-title">
+                <span class="logo-icon">⚡</span>
+                <div>
+                    <h1>Linux Multi-Process Pipeline Simulator</h1>
+                    <p class="subtitle">OSSP Team 17 &bull; Inter-Process Communication (IPC) via Pipes</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="dot"></span>
+                <span>WSL2 Linux &bull; C Engine Active</span>
+            </div>
+        </header>
+
+        <!-- Command Input Section -->
+        <section class="card input-card">
+            <label for="command-input" class="label-heading">Enter Linux Pipeline Command:</label>
+            <div class="input-row">
+                <span class="prompt-char">$</span>
+                <input type="text" id="command-input" value="cat data/access_log.txt | grep 404 | wc -l" placeholder="e.g. cat file.txt | grep pattern | wc -l" spellcheck="false" autocomplete="off">
+                <button id="btn-run" class="btn-execute">▶ Run Pipeline</button>
+            </div>
+
+            <!-- Preset Quick-Select Buttons -->
+            <div class="presets-row">
+                <span class="preset-label">Quick Examples:</span>
+                <button class="preset-pill active" data-cmd="cat data/access_log.txt | grep 404 | wc -l">
+                    1. Count 404 Errors (3 Stages)
+                </button>
+                <button class="preset-pill" data-cmd="cat data/words.txt | grep linux | wc -l">
+                    2. Count "Linux" in Words (3 Stages)
+                </button>
+                <button class="preset-pill" data-cmd="cat data/employees.csv | grep Engineering | cut -d, -f2,5">
+                    3. Filter Engineers (3 Stages)
+                </button>
+                <button class="preset-pill" data-cmd="cat data/access_log.txt | awk '{print $9}' | sort | uniq -c">
+                    4. HTTP Status Distribution (4 Stages)
+                </button>
+            </div>
+        </section>
+
+        <!-- Visual Pipeline Simulation Flow -->
+        <section class="card visual-card">
+            <div class="section-header">
+                <h2>Pipeline Process &amp; Pipe Flow</h2>
+                <span id="timing-badge" class="badge">Awaiting Execution</span>
+            </div>
+            <div class="pipeline-viewport" id="pipeline-viewport">
+                <!-- Visual pipeline blocks will be injected here -->
+            </div>
+        </section>
+
+        <!-- Output Terminal -->
+        <section class="card output-card">
+            <div class="section-header">
+                <h2>Pipeline Output (STDOUT)</h2>
+                <span class="output-meta" id="output-meta">0 lines &bull; 0 bytes</span>
+            </div>
+            <pre class="terminal-screen" id="output-screen">// Click "Run Pipeline" to execute the processes concurrently...</pre>
+        </section>
+
+        <!-- Simple OS Concept Summary (Helpful for Lab Viva / Evaluation) -->
+        <section class="os-summary-grid">
+            <div class="summary-box">
+                <span class="syscall-name">1. pipe()</span>
+                <p>Creates an in-memory kernel buffer connecting the output of one process to the input of the next.</p>
+            </div>
+            <div class="summary-box">
+                <span class="syscall-name">2. fork()</span>
+                <p>Spawns independent child processes concurrently so all commands execute simultaneously.</p>
+            </div>
+            <div class="summary-box">
+                <span class="syscall-name">3. dup2()</span>
+                <p>Redirects standard input (FD 0) and standard output (FD 1) to the pipe descriptors.</p>
+            </div>
+            <div class="summary-box">
+                <span class="syscall-name">4. close() &amp; waitpid()</span>
+                <p>Closes unused pipe ends to prevent reader deadlock on EOF and harvests child exit statuses.</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="simple-footer">
+            <p>OSSP Team 17 &bull; Multi-Process Command Pipeline System</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
+</body>
+</html>

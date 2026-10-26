@@ -1,0 +1,427 @@
+/**
+ * ============================================================================
+ * OPERATING SYSTEMS & SYSTEMS PROGRAMMING (OSSP) - TEAM 17
+ * Simplified, Clean Styles for Linux Pipeline Simulator
+ * ============================================================================
+ */
+
+:root {
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #0b0f19;
+    --border-color: #334155;
+    --text-primary: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent-cyan: #38bdf8;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    padding: 1.5rem 1rem;
+}
+
+.app-container {
+    max-width: 1050px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Header */
+.simple-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    font-size: 1.8rem;
+    background: #0284c7;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.logo-title h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+}
+
+.status-indicator .dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Card Container */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+}
+
+.badge {
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+}
+
+/* Input Section */
+.label-heading {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.input-row {
+    display: flex;
+    align-items: center;
+    background: var(--bg-input);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+}
+
+.input-row:focus-within {
+    border-color: var(--accent-cyan);
+}
+
+.prompt-char {
+    color: var(--accent-green);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.1rem;
+    user-select: none;
+}
+
+.input-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e0f2fe;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    outline: none;
+}
+
+.btn-execute {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-execute:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-execute:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Quick Example Pills */
+.presets-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+}
+
+.preset-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.preset-pill {
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    color: #cbd5e1;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.preset-pill:hover, .preset-pill.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+/* Pipeline Viewport */
+.pipeline-viewport {
+    background: #090d16;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem 1rem;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto;
+}
+
+.pipeline-chain {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    padding: 0.5rem 0;
+}
+
+/* Process Block */
+.process-box {
+    background: #1e293b;
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    width: 190px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.process-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+.process-box-header {
+    background: #0f172a;
+    padding: 0.4rem 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    border-bottom: 1px solid #334155;
+    font-family: var(--font-mono);
+}
+
+.stage-num {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.pid-tag {
+    color: var(--accent-cyan);
+    font-weight: 600;
+}
+
+.process-box-body {
+    padding: 0.75rem 0.6rem;
+    text-align: center;
+}
+
+.cmd-text {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    word-break: break-word;
+    margin-bottom: 0.4rem;
+}
+
+.status-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+}
+
+/* Pipe Channel Connector */
+.pipe-channel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 110px;
+    position: relative;
+}
+
+.pipe-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--accent-cyan);
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+}
+
+.pipe-bar {
+    width: 100%;
+    height: 10px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pipe-flow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 30px;
+    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+    animation: flowPulse 1.2s linear infinite;
+}
+
+@keyframes flowPulse {
+    0% { left: -30px; }
+    100% { left: 100%; }
+}
+
+.pipe-meta {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+/* Output Screen */
+.terminal-screen {
+    background: #090d16;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    min-height: 120px;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+.output-meta {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* OS Summary Grid */
+.os-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.summary-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+}
+
+.syscall-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 0.25rem;
+}
+
+.summary-box p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Footer */
+.simple-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.5rem 0;
+}

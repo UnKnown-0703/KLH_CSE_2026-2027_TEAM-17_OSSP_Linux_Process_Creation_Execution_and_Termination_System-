@@ -1,0 +1,17 @@
+operating system process pipeline concurrency interprocess communication
+unix linux posix system call fork pipe dup2 execvp waitpid
+kernel ring buffer stream data file descriptor table stdin stdout stderr
+process management scheduler cpu memory pipe buffer throughput
+linux pipeline transfers output of one process to input of another process
+operating systems course project team hackathon multi process execution
+pipes connect stdout of producer process to stdin of consumer process
+concurrent execution ensures all processes run simultaneously without deadlock
+operating system kernel manages anonymous unidirectional pipe buffers
+buffer capacity sixty four kilobytes on modern linux kernels
+fork creates exact copy of parent process including open file descriptors
+dup2 duplicates file descriptor to specified standard descriptor
+execvp replaces process memory image with executable linux binary
+waitpid harvests child process termination status and prevents zombie processes
+operating system process pipeline concurrency interprocess communication
+linux pipeline transfers output of one process to input of another process
+kernel ring buffer stream data file descriptor table stdin stdout stderr

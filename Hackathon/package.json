@@ -1,0 +1,13 @@
+{
+  "name": "multi-process-pipeline-system",
+  "version": "1.0.0",
+  "description": "Multi-Process Command Pipeline System - Team 17 OSSP Hackathon",
+  "main": "server.js",
+  "scripts": {
+    "start": "node -e \"const { exec } = require('child_process'); exec('start http://localhost:5000'); require('./server.js');\"",
+    "build": "wsl gcc -Wall -Wextra -O2 -g -D_GNU_SOURCE c_src/pipeline_engine.c c_src/pipeline_parser.c c_src/pipeline_monitor.c -o bin/pipeline_engine",
+    "test": "wsl bash c_src/test_pipelines.sh"
+  },
+  "author": "Team 17",
+  "license": "ISC"
+}

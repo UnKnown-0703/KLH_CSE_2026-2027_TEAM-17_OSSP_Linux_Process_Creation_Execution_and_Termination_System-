@@ -231,9 +231,49 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        const executeZombieBtn = document.getElementById('executeZombieBtn');
+        if (executeZombieBtn) {
+            executeZombieBtn.addEventListener('click', () => {
+                const cmd = (customInput ? customInput.value.trim() : '') || 'ls -la';
+                selectScenario('zombie');
+                executeScenario('zombie', cmd);
+            });
+        }
+
+        const executeOrphanBtn = document.getElementById('executeOrphanBtn');
+        if (executeOrphanBtn) {
+            executeOrphanBtn.addEventListener('click', () => {
+                const cmd = (customInput ? customInput.value.trim() : '') || 'sleep 3';
+                selectScenario('orphan');
+                executeScenario('orphan', cmd);
+            });
+        }
+
         const terminateCustomBtn = document.getElementById('terminateCustomBtn');
         if (terminateCustomBtn) {
             terminateCustomBtn.addEventListener('click', () => {
+                executeScenario('signal', '9');
+            });
+        }
+
+        // Active In-Flight Controller Buttons
+        const apToZombieBtn = document.getElementById('apToZombieBtn');
+        if (apToZombieBtn) {
+            apToZombieBtn.addEventListener('click', () => {
+                transitionInFlightState('zombie');
+            });
+        }
+
+        const apToOrphanBtn = document.getElementById('apToOrphanBtn');
+        if (apToOrphanBtn) {
+            apToOrphanBtn.addEventListener('click', () => {
+                transitionInFlightState('orphan');
+            });
+        }
+
+        const apKillBtn = document.getElementById('apKillBtn');
+        if (apKillBtn) {
+            apKillBtn.addEventListener('click', () => {
                 executeScenario('signal', '9');
             });
         }
@@ -244,6 +284,129 @@ document.addEventListener('DOMContentLoaded', () => {
                     executeScenario('custom', customInput.value);
                 }
             });
+        }
+    }
+
+    /**
+     * In-Flight Process State Transition Trigger
+     * Dynamically switches an actively running process into Zombie or Orphan state
+     */
+    function transitionInFlightState(targetState) {
+        const timeStr = new Date().toTimeString().split(' ')[0];
+        const pPid = state.lastParentPid || 524;
+        const cPid = state.lastChildPid || (pPid + 1);
+
+        if (targetState === 'zombie') {
+            logToTerminal(`[${timeStr}] waitpid() delay [ZOMBIE_SWITCH] (PID: ${cPid} | PPID: ${pPid}) [ZOMBIE (defunct)] Child process execution complete. Parent intentionally suspended waitpid(); child entered ZOMBIE (defunct) state in Linux kernel!`, 'event');
+            
+            const ev = {
+                time: timeStr,
+                syscall: 'waitpid() delayed',
+                phase: 'ZOMBIE_SWITCH',
+                pid: cPid,
+                ppid: pPid,
+                state: 'ZOMBIE (defunct)',
+                message: 'In-flight transition: Child completed execution. Parent suspended waitpid(), holding task_struct in kernel table.'
+            };
+            state.eventLogs.push(ev);
+            addAuditTableRow(ev);
+
+            // Update Dynamic SVG Tree
+            Diagrams.renderProcessTree('processTreeContainer', {
+                parentPid: pPid,
+                parentPpid: pPid - 1,
+                parentState: 'SLEEPING',
+                childPid: cPid,
+                childPpid: pPid,
+                childState: 'ZOMBIE (defunct)',
+                scenario: 'zombie'
+            });
+
+            // Update PCB table
+            const childStateEl = document.getElementById('childStateVal');
+            if (childStateEl) {
+                childStateEl.innerHTML = '<span class="state-badge zombie">ZOMBIE (defunct)</span>';
+            }
+            const parentStateEl = document.getElementById('parentStateVal');
+            if (parentStateEl) {
+                parentStateEl.innerHTML = '<span class="state-badge sleeping">SLEEPING</span>';
+            }
+
+            // Schedule reap after 3 seconds
+            setTimeout(() => {
+                const reapTime = new Date().toTimeString().split(' ')[0];
+                logToTerminal(`[${reapTime}] waitpid() reap  [ZOMBIE_REAP]   (PID: ${cPid} | PPID: ${pPid}) [TERMINATED] Parent woke up and called waitpid(). Harvested zombie exit code 0. PCB cleanly deleted!`, 'event');
+                const reapEv = {
+                    time: reapTime,
+                    syscall: 'waitpid() reaped',
+                    phase: 'ZOMBIE_REAP',
+                    pid: cPid,
+                    ppid: pPid,
+                    state: 'TERMINATED',
+                    message: 'Parent woke up and reaped child via waitpid(). Kernel removed defunct entry from process table.'
+                };
+                state.eventLogs.push(reapEv);
+                addAuditTableRow(reapEv);
+
+                Diagrams.renderProcessTree('processTreeContainer', {
+                    parentPid: pPid,
+                    parentPpid: pPid - 1,
+                    parentState: 'RUNNING',
+                    childPid: cPid,
+                    childPpid: pPid,
+                    childState: 'TERMINATED',
+                    scenario: 'zombie'
+                });
+
+                if (childStateEl) {
+                    childStateEl.innerHTML = '<span class="state-badge terminated">TERMINATED</span>';
+                }
+            }, 3000);
+
+        } else if (targetState === 'orphan') {
+            logToTerminal(`[${timeStr}] exit(0) parent   [ORPHAN_SWITCH] (PID: ${pPid} | PPID: ${pPid - 1}) [TERMINATED] Parent process exited early without waiting! Child is now an orphan.`, 'event');
+            logToTerminal(`[${timeStr}] reparented       [ORPHAN_SWITCH] (PID: ${cPid} | PPID: 1) [ORPHAN] Child adopted by systemd/init (PID 1)! New PPID = 1.`, 'event');
+
+            const ev1 = {
+                time: timeStr,
+                syscall: 'exit(0)',
+                phase: 'ORPHAN_SWITCH',
+                pid: pPid,
+                ppid: pPid - 1,
+                state: 'TERMINATED',
+                message: 'In-flight transition: Parent process terminated early, abandoning child.'
+            };
+            const ev2 = {
+                time: timeStr,
+                syscall: 'reparented',
+                phase: 'ORPHAN_SWITCH',
+                pid: cPid,
+                ppid: 1,
+                state: 'ORPHAN',
+                message: 'Child process reparented to systemd/init (PID 1). PPID updated to 1.'
+            };
+            state.eventLogs.push(ev1, ev2);
+            addAuditTableRow(ev1);
+            addAuditTableRow(ev2);
+
+            // Update Dynamic SVG Tree
+            Diagrams.renderProcessTree('processTreeContainer', {
+                parentPid: pPid,
+                parentPpid: pPid - 1,
+                parentState: 'TERMINATED',
+                childPid: cPid,
+                childPpid: 1,
+                childState: 'ORPHAN',
+                scenario: 'orphan'
+            });
+
+            // Update PCB
+            const childPpidEl = document.getElementById('childPpidVal');
+            if (childPpidEl) childPpidEl.textContent = '1 (systemd)';
+            const childStateEl = document.getElementById('childStateVal');
+            if (childStateEl) childStateEl.innerHTML = '<span class="state-badge orphan">ORPHAN (Adopted)</span>';
+            const parentStateEl = document.getElementById('parentStateVal');
+            if (parentStateEl) parentStateEl.innerHTML = '<span class="state-badge terminated">TERMINATED</span>';
         }
     }
 
@@ -261,13 +424,23 @@ document.addEventListener('DOMContentLoaded', () => {
             treeIndicator.style.color = '#f59e0b';
         }
 
+        // Show active process controller banner
+        const activeBanner = document.getElementById('activeProcessBanner');
+        const apChildPidEl = document.getElementById('apChildPid');
+        const apParentPidEl = document.getElementById('apParentPid');
+        if (activeBanner) {
+            activeBanner.style.display = 'flex';
+            if (apChildPidEl) apChildPidEl.textContent = 'Spawning...';
+            if (apParentPidEl) apParentPidEl.textContent = 'Parent';
+        }
+
         try {
             const response = await fetch('/api/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     scenario,
-                    customCmd: customCmd || (scenario === 'custom' ? document.getElementById('customCommandInput').value : ''),
+                    customCmd: customCmd || (scenario === 'custom' || scenario === 'zombie' || scenario === 'orphan' ? document.getElementById('customCommandInput').value : ''),
                     jsonMode: true
                 })
             });
@@ -297,6 +470,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 treeIndicator.style.background = 'rgba(16, 185, 129, 0.2)';
                 treeIndicator.style.color = '#10b981';
             }
+            if (activeBanner) {
+                setTimeout(() => {
+                    activeBanner.style.display = 'none';
+                }, 4000);
+            }
         }
     }
 
@@ -308,6 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let parentPpid = 0;
         let childPid = 0;
         let childPpid = 0;
+        const apChildPidEl = document.getElementById('apChildPid');
+        const apParentPidEl = document.getElementById('apParentPid');
 
         for (let i = 0; i < events.length; i++) {
             const ev = events[i];
@@ -324,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (i === 0) {
                 parentPid = ev.pid;
                 parentPpid = ev.ppid;
+                state.lastParentPid = parentPid;
             }
 
             if (ev.syscall.includes('fork() -> child_pid') || ev.phase === 'CREATION') {
@@ -333,6 +514,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 childPid = ev.pid;
                 childPpid = ev.ppid;
             }
+
+            if (childPid) state.lastChildPid = childPid;
+            if (apChildPidEl && childPid) apChildPidEl.textContent = childPid;
+            if (apParentPidEl && parentPid) apParentPidEl.textContent = parentPid;
 
             // Update PCB table in UI
             updatePcbDisplay(ev, parentPid, parentPpid, childPid, childPpid);
@@ -462,7 +647,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const clearBtn = document.getElementById('clearTerminalBtn');
         const copyBtn = document.getElementById('copyLogsBtn');
         const termKillBtn = document.getElementById('termKillBtn');
+        const termZombieBtn = document.getElementById('termZombieBtn');
+        const termOrphanBtn = document.getElementById('termOrphanBtn');
+        const customInput = document.getElementById('customCommandInput');
         const term = document.getElementById('terminalOutput');
+
+        if (termZombieBtn) {
+            termZombieBtn.addEventListener('click', () => {
+                const cmd = (customInput ? customInput.value.trim() : '') || 'ls -la';
+                executeScenario('zombie', cmd);
+            });
+        }
+
+        if (termOrphanBtn) {
+            termOrphanBtn.addEventListener('click', () => {
+                const cmd = (customInput ? customInput.value.trim() : '') || 'sleep 3';
+                executeScenario('orphan', cmd);
+            });
+        }
 
         if (termKillBtn) {
             termKillBtn.addEventListener('click', () => {

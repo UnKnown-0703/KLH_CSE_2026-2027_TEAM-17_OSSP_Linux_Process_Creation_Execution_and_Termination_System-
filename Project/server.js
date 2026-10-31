@@ -128,9 +128,26 @@ async function handleRun(req, res, postData) {
         const jsonMode = body.jsonMode !== false; // default true
         const signalNum = body.signalNum || 9;
 
-        // Ensure binary exists
+        // Ensure binary exists or recompile if needed
         const binaryPath = path.join(BIN_DIR, 'process_system');
-        if (!fs.existsSync(binaryPath)) {
+        const srcFiles = ['main.c', 'module_creation.c', 'module_sync.c', 'module_monitor.c', 'process_lifecycle.h'];
+        let needsRecompile = !fs.existsSync(binaryPath);
+        if (!needsRecompile) {
+            try {
+                const binMtime = fs.statSync(binaryPath).mtimeMs;
+                for (const sf of srcFiles) {
+                    const sp = path.join(C_SRC_DIR, sf);
+                    if (fs.existsSync(sp) && fs.statSync(sp).mtimeMs > binMtime) {
+                        needsRecompile = true;
+                        break;
+                    }
+                }
+            } catch (e) {
+                // Ignore stat error
+            }
+        }
+
+        if (needsRecompile) {
             await runCommand(getWSLCommand(
                 'gcc -Wall -Wextra -O2 src/main.c src/module_creation.c src/module_sync.c src/module_monitor.c -o bin/process_system'
             ));
@@ -143,6 +160,10 @@ async function handleRun(req, res, postData) {
         } else if (scenario === 'custom' && customCmd) {
             execCmd += ` ${customCmd}`;
         } else if (scenario === 'normal' && customCmd) {
+            execCmd += ` ${customCmd}`;
+        } else if (scenario === 'zombie' && customCmd) {
+            execCmd += ` ${customCmd}`;
+        } else if (scenario === 'orphan' && customCmd) {
             execCmd += ` ${customCmd}`;
         }
 

@@ -67,13 +67,21 @@ int get_proc_state(pid_t pid, char *state_buf, size_t max_len) {
 /**
  * run_zombie_simulation()
  * Demonstrates creation of a zombie process and subsequent reaping.
+ * Supports running an arbitrary command whose exit leaves a zombie until reaped.
  */
-int run_zombie_simulation(int json_mode) {
+int run_zombie_simulation(const char *cmd, char *const argv[], int json_mode) {
     pid_t parent_pid = getpid();
     pid_t parent_ppid = getppid();
 
-    emit_event(json_mode, "ZOMBIE_DEMO", "start", parent_pid, parent_ppid, STATE_RUNNING,
-               "--- STARTING ZOMBIE PROCESS SIMULATION ---");
+    char start_msg[256];
+    if (cmd && argv) {
+        snprintf(start_msg, sizeof(start_msg),
+                 "--- STARTING ZOMBIE SIMULATION WITH COMMAND '%s' ---", cmd);
+    } else {
+        snprintf(start_msg, sizeof(start_msg),
+                 "--- STARTING ZOMBIE PROCESS SIMULATION ---");
+    }
+    emit_event(json_mode, "ZOMBIE_DEMO", "start", parent_pid, parent_ppid, STATE_RUNNING, start_msg);
 
     pid_t child_pid = fork();
 
@@ -83,22 +91,35 @@ int run_zombie_simulation(int json_mode) {
     }
 
     if (child_pid == 0) {
-        /* Child process: Terminates immediately */
+        /* Child process: Runs command (or exits) immediately while parent delays wait() */
         pid_t my_pid = getpid();
         pid_t my_ppid = getppid();
-        emit_event(json_mode, "ZOMBIE_DEMO", "child_exit", my_pid, my_ppid, STATE_READY,
-                   "Child process created. Now calling exit(42) immediately while parent is sleeping without wait().");
-        exit(42);
+
+        if (cmd && argv) {
+            char msg[256];
+            snprintf(msg, sizeof(msg),
+                     "Child (PID %d) executing '%s'. Will exit upon finish while parent sleeps without wait().",
+                     my_pid, cmd);
+            emit_event(json_mode, "ZOMBIE_DEMO", "child_exec", my_pid, my_ppid, STATE_RUNNING, msg);
+            fflush(stdout);
+            execvp(cmd, argv);
+            /* If exec fails */
+            exit(127);
+        } else {
+            emit_event(json_mode, "ZOMBIE_DEMO", "child_exit", my_pid, my_ppid, STATE_READY,
+                       "Child process created. Now calling exit(42) immediately while parent is sleeping without wait().");
+            exit(42);
+        }
     }
 
     /* Parent process: Deliberately DOES NOT call wait() right away */
     char msg[256];
     snprintf(msg, sizeof(msg),
-             "Parent (PID %d) created child (PID %d). Child has exited, but parent will SLEEP for 3 seconds WITHOUT calling wait().",
+             "Parent (PID %d) created child (PID %d). Child exits, but parent will SLEEP for 3 seconds WITHOUT calling wait().",
              parent_pid, child_pid);
     emit_event(json_mode, "ZOMBIE_DEMO", "parent_sleep", parent_pid, parent_ppid, STATE_SLEEPING, msg);
 
-    /* Sleep 1 second to allow child to exit */
+    /* Sleep 1 second to allow child to complete/exit */
     sleep(1);
 
     /* Inspect child state in kernel /proc */
@@ -134,13 +155,21 @@ int run_zombie_simulation(int json_mode) {
 /**
  * run_orphan_simulation()
  * Demonstrates child process becoming orphan and adopted by init/systemd.
+ * Supports running an arbitrary command under init adoption.
  */
-int run_orphan_simulation(int json_mode) {
+int run_orphan_simulation(const char *cmd, char *const argv[], int json_mode) {
     pid_t parent_pid = getpid();
     pid_t parent_ppid = getppid();
 
-    emit_event(json_mode, "ORPHAN_DEMO", "start", parent_pid, parent_ppid, STATE_RUNNING,
-               "--- STARTING ORPHAN PROCESS SIMULATION ---");
+    char start_msg[256];
+    if (cmd && argv) {
+        snprintf(start_msg, sizeof(start_msg),
+                 "--- STARTING ORPHAN SIMULATION WITH COMMAND '%s' ---", cmd);
+    } else {
+        snprintf(start_msg, sizeof(start_msg),
+                 "--- STARTING ORPHAN PROCESS SIMULATION ---");
+    }
+    emit_event(json_mode, "ORPHAN_DEMO", "start", parent_pid, parent_ppid, STATE_RUNNING, start_msg);
 
     pid_t child_pid = fork();
 
@@ -153,7 +182,7 @@ int run_orphan_simulation(int json_mode) {
         /* Parent process: Terminates IMMEDIATELY without waiting */
         char msg[256];
         snprintf(msg, sizeof(msg),
-                 "Parent (PID %d) created child (PID %d). Parent now EXITS immediately, leaving child running!",
+                 "Parent (PID %d) created child (PID %d). Parent now EXITS immediately, leaving child running as an ORPHAN!",
                  parent_pid, child_pid);
         emit_event(json_mode, "ORPHAN_DEMO", "parent_early_exit", parent_pid, parent_ppid, STATE_TERMINATED, msg);
         exit(0);
@@ -165,12 +194,12 @@ int run_orphan_simulation(int json_mode) {
 
     char msg[256];
     snprintf(msg, sizeof(msg),
-             "Child PID %d started. Initial Parent PID: %d. Child will sleep 2 seconds while parent exits.",
+             "Child PID %d started. Initial Parent PID: %d. Child will sleep 1 second while parent exits.",
              my_pid, initial_ppid);
     emit_event(json_mode, "ORPHAN_DEMO", "child_running", my_pid, initial_ppid, STATE_RUNNING, msg);
 
     /* Sleep to allow parent to terminate */
-    sleep(2);
+    sleep(1);
 
     /* Child wakes up and checks new parent */
     pid_t new_ppid = getppid();
@@ -179,9 +208,20 @@ int run_orphan_simulation(int json_mode) {
              initial_ppid, my_pid, new_ppid);
     emit_event(json_mode, "ORPHAN_DEMO", "reparented", my_pid, new_ppid, STATE_ORPHAN, msg);
 
-    emit_event(json_mode, "ORPHAN_DEMO", "child_clean_exit", my_pid, new_ppid, STATE_TERMINATED,
-               "Orphan child completing execution and exiting cleanly.");
-    exit(0);
+    if (cmd && argv) {
+        char exec_msg[256];
+        snprintf(exec_msg, sizeof(exec_msg),
+                 "Orphan child PID %d (now adopted by Init PPID %d) executing target command '%s'...",
+                 my_pid, new_ppid, cmd);
+        emit_event(json_mode, "ORPHAN_DEMO", "execvp()", my_pid, new_ppid, STATE_RUNNING, exec_msg);
+        fflush(stdout);
+        execvp(cmd, argv);
+        exit(127);
+    } else {
+        emit_event(json_mode, "ORPHAN_DEMO", "child_clean_exit", my_pid, new_ppid, STATE_TERMINATED,
+                   "Orphan child completing execution and exiting cleanly.");
+        exit(0);
+    }
 }
 
 /**

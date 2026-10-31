@@ -121,12 +121,24 @@ int main(int argc, char *argv[]) {
         return run_standard_lifecycle(cmd, exec_args, json_mode);
 
     } else if (strcmp(scenario, "zombie") == 0) {
-        /* Zombie Simulation */
-        return run_zombie_simulation(json_mode);
+        /* Zombie Simulation (optional command) */
+        char *cmd = NULL;
+        char **exec_args = NULL;
+        if (argc > arg_offset + 1) {
+            cmd = argv[arg_offset + 1];
+            exec_args = &argv[arg_offset + 1];
+        }
+        return run_zombie_simulation(cmd, exec_args, json_mode);
 
     } else if (strcmp(scenario, "orphan") == 0) {
-        /* Orphan Simulation */
-        return run_orphan_simulation(json_mode);
+        /* Orphan Simulation (optional command) */
+        char *cmd = NULL;
+        char **exec_args = NULL;
+        if (argc > arg_offset + 1) {
+            cmd = argv[arg_offset + 1];
+            exec_args = &argv[arg_offset + 1];
+        }
+        return run_orphan_simulation(cmd, exec_args, json_mode);
 
     } else if (strcmp(scenario, "nonblocking") == 0) {
         /* Non-blocking waitpid(WNOHANG) */

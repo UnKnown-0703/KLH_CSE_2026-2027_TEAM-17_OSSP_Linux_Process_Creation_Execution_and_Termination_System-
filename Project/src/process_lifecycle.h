@@ -62,8 +62,8 @@ void terminate_with_status(int exit_code, int json_mode);
  * ========================================================================= */
 void print_identification(const char *role, int json_mode);
 int get_proc_state(pid_t pid, char *state_buf, size_t max_len);
-int run_zombie_simulation(int json_mode);
-int run_orphan_simulation(int json_mode);
+int run_zombie_simulation(const char *cmd, char *const argv[], int json_mode);
+int run_orphan_simulation(const char *cmd, char *const argv[], int json_mode);
 int run_signal_simulation(int sig_num, int json_mode);
 
 #endif /* PROCESS_LIFECYCLE_H */
